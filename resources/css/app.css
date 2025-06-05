@@ -1,0 +1,28 @@
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* تأكد أن العنصر container لديه relative position */
+select#category_id {
+    /* لإزالة السهم الافتراضي في بعض المتصفحات */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    /* تخصيص مكان السهم */
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg fill='%23333' height='10' viewBox='0 0 24 24' width='10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 10px 10px;
+
+    padding-right: 2rem; /* لتوفير مكان للسهم */
+}
+
+/* لو عندك RTL في الصفحة، غير مكان السهم لليسار */
+body[dir="rtl"] select#category_id {
+    background-position: left 0.75rem center;
+    padding-left: 2rem;
+    padding-right: 0.75rem;
+}
