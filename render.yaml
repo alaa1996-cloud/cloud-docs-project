@@ -1,0 +1,42 @@
+databases:
+  - name: cloud-docs-db
+    databaseName: cloud_docs
+    user: cloud_user
+
+services:
+  - type: web
+    name: cloud-docs-app
+    env: docker
+    plan: free
+    autoDeploy: true
+    region: singapore
+    buildCommand: ""
+    startCommand: php artisan serve --host=0.0.0.0 --port=10000
+    healthCheckPath: /
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_KEY
+        generateValue: true
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        fromDatabase:
+          name: cloud-docs-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: cloud-docs-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: cloud-docs-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: cloud-docs-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: cloud-docs-db
+          property: password
