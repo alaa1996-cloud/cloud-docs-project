@@ -1,24 +1,24 @@
-FROM php:8.2-apache
+FROM php:8.2-fpm
 
-# تثبيت الإضافات المطلوبة
-RUN docker-php-ext-install pdo pdo_mysql
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git curl zip unzip libzip-dev libpng-dev libonig-dev libxml2-dev \
+    && docker-php-ext-install pdo_mysql zip mbstring exif pcntl bcmath gd
 
-# نسخ ملفات المشروع
-COPY . /var/www/html/
-
-# إعداد صلاحيات Laravel
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-
-# تثبيت Composer
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# نسخ ملف .env.example إلى .env
-RUN cp .env.example .env
+# Set working directory
+WORKDIR /var/www
 
-# تثبيت الاعتماديات
-RUN composer install --no-dev --optimize-autoloader
+# Copy existing application directory contents
+COPY . /var/www
 
-# إنشاء مفتاح التطبيق
-RUN php artisan key:generate
+# Set permissions
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 755 /var/www/storage
+RUN apt-get update && apt-get install -y git unzip zip
 
-EXPOSE 80
+# Expose port 9000 and start php-fpm server
+EXPOSE 9000
+CMD ["php-fpm"]
