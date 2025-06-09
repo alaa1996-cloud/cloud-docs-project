@@ -1,2 +1,4 @@
-<?php
-echo "Render PHP detection test";
+node_modules
+vendor
+.env
+*.log

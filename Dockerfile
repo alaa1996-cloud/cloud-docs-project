@@ -1,24 +1,27 @@
-FROM php:8.2-fpm
+FROM php:8.2-apache
 
-# Install system dependencies
+# تثبيت الإضافات المطلوبة للـ Laravel و PostgreSQL
 RUN apt-get update && apt-get install -y \
-    git curl zip unzip libzip-dev libpng-dev libonig-dev libxml2-dev \
-    && docker-php-ext-install pdo_mysql zip mbstring exif pcntl bcmath gd
+    git \
+    curl \
+    libpq-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    && docker-php-ext-install pdo pdo_pgsql zip
 
-# Install Composer
+# تثبيت Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
-WORKDIR /var/www
+# نسخ الملفات إلى مجلد Apache
+COPY . /var/www/html/
 
-# Copy existing application directory contents
-COPY . /var/www
+# إعداد الصلاحيات
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage
-RUN apt-get update && apt-get install -y git unzip zip
+# نسخ ملف Apache config
+COPY ./docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
-# Expose port 9000 and start php-fpm server
-EXPOSE 9000
-CMD ["php-fpm"]
+# تفعيل mod_rewrite
+RUN a2enmod rewrite
