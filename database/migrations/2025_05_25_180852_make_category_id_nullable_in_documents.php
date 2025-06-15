@@ -14,7 +14,10 @@ return new class extends Migration
     public function up()
     {
         Schema::table('documents', function (Blueprint $table) {
-            $table->foreignId('category_id')->nullable()->constrained()->onDelete('set null');
+            if (!Schema::hasColumn('documents', 'category_id')) {
+                $table->unsignedBigInteger('category_id')->nullable();
+            }
+
         });
     }
 

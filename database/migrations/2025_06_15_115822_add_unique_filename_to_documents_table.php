@@ -14,8 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('documents', function (Blueprint $table) {
-            $table->dropUnique('documents_filename_unique'); // اسم القيد قد يختلف
-
+            $table->unique('filename');
         });
     }
 
@@ -27,7 +26,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('documents', function (Blueprint $table) {
-            $table->unique('filename');
+            $table->dropUnique(['filename']);
         });
     }
 };
