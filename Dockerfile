@@ -31,3 +31,11 @@ EXPOSE 10000
 
 # Start Laravel development server
 CMD php artisan serve --host=0.0.0.0 --port=10000
+COPY .env.example .env
+
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+
+RUN php artisan key:generate
+
+RUN php artisan config:cache
+
