@@ -1,41 +1,44 @@
-# استخدم صورة PHP-FPM الرسمية مع PHP 8.2
+# استخدم صورة PHP الرسمية
+FROM node:18 AS node
+
+# مرحلة تثبيت الباكجات الخاصة بـ Vite
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+# المرحلة الأساسية
 FROM php:8.2-fpm
 
-# تثبيت الأدوات اللازمة
+# تثبيت الأدوات المطلوبة
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    unzip \
-    libzip-dev \
-    zip \
-    && docker-php-ext-install pdo pdo_mysql zip
+    git curl unzip libpq-dev libzip-dev zip libpng-dev libonig-dev \
+    && docker-php-ext-install pdo pdo_pgsql zip
 
 # تثبيت Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# تعيين مجلد العمل
+# ضبط مجلد العمل
 WORKDIR /var/www/html
 
-# نسخ ملفات المشروع
+# نسخ المشروع
 COPY . .
 
-# نسخ ملف .env.example إلى .env إذا لم يكن .env موجودًا
-RUN if [ ! -f .env ]; then cp .env.example .env; fi
+# نسخ ملفات البناء من مرحلة node
+COPY --from=node /app/public/build ./public/build
 
-# تثبيت باقات Composer بدون تفاعل
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+# تثبيت باقات PHP
+RUN composer install --no-dev --optimize-autoloader
 
-# توليد مفتاح التطبيق
-RUN php artisan key:generate
+# توليد app key + cache
+RUN php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan key:generate
 
-# كاش الإعدادات
-RUN php artisan config:cache
-
-# ضبط صلاحيات مجلدات التخزين والBootstrap cache
+# إعطاء الصلاحيات
 RUN chown -R www-data:www-data storage bootstrap/cache
 
-# تعريض بورت 10000
+# فتح البورت
 EXPOSE 10000
 
-# تشغيل خادم Laravel على 0.0.0.0:10000
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
+# تشغيل السيرفر
+CMD php artisan serve --host=0.0.0.0 --port=10000
