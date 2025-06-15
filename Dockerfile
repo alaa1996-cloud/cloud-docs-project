@@ -1,41 +1,41 @@
-# Use the official PHP image
+# استخدم صورة PHP-FPM الرسمية مع PHP 8.2
 FROM php:8.2-fpm
 
-# Install system dependencies
+# تثبيت الأدوات اللازمة
 RUN apt-get update && apt-get install -y \
     git \
     curl \
     unzip \
-    libpq-dev \
     libzip-dev \
     zip \
-    && docker-php-ext-install pdo pdo_pgsql zip
+    && docker-php-ext-install pdo pdo_mysql zip
 
-# Install Composer
+# تثبيت Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
+# تعيين مجلد العمل
 WORKDIR /var/www/html
 
-# Copy existing application directory
+# نسخ ملفات المشروع
 COPY . .
 
-# Install PHP dependencies
+# نسخ ملف .env.example إلى .env إذا لم يكن .env موجودًا
+RUN if [ ! -f .env ]; then cp .env.example .env; fi
+
+# تثبيت باقات Composer بدون تفاعل
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-
-# Expose port 10000 for Laravel dev server
-EXPOSE 10000
-
-# Start Laravel development server
-CMD php artisan serve --host=0.0.0.0 --port=10000
-COPY .env.example .env
-
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
-
+# توليد مفتاح التطبيق
 RUN php artisan key:generate
 
+# كاش الإعدادات
 RUN php artisan config:cache
 
+# ضبط صلاحيات مجلدات التخزين والBootstrap cache
+RUN chown -R www-data:www-data storage bootstrap/cache
+
+# تعريض بورت 10000
+EXPOSE 10000
+
+# تشغيل خادم Laravel على 0.0.0.0:10000
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
