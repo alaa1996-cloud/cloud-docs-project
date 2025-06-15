@@ -1,27 +1,33 @@
-FROM php:8.2-apache
+# Use the official PHP image
+FROM php:8.2-fpm
 
-# تثبيت الإضافات المطلوبة للـ Laravel و PostgreSQL
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     curl \
+    unzip \
     libpq-dev \
     libzip-dev \
     zip \
-    unzip \
     && docker-php-ext-install pdo pdo_pgsql zip
 
-# تثبيت Composer
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# نسخ الملفات إلى مجلد Apache
-COPY . /var/www/html/
+# Set working directory
+WORKDIR /var/www/html
 
-# إعداد الصلاحيات
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+# Copy existing application directory
+COPY . .
 
-# نسخ ملف Apache config
-COPY ./docker/apache.conf /etc/apache2/sites-available/000-default.conf
+# Install PHP dependencies
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# تفعيل mod_rewrite
-RUN a2enmod rewrite
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Expose port 10000 for Laravel dev server
+EXPOSE 10000
+
+# Start Laravel development server
+CMD php artisan serve --host=0.0.0.0 --port=10000
