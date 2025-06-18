@@ -54,11 +54,7 @@
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
         ],
-        "post-install-cmd": [
-
-
-
-        ]
+        "post-install-cmd": []
     },
     "extra": {
         "laravel": {
