@@ -20,6 +20,9 @@ WORKDIR /var/www/html
 # نسخ ملفات المشروع
 COPY . .
 
+# تثبيت حزم npm وبناء أصول Vite (يجب قبل composer)
+RUN npm install && npm run build
+
 # تثبيت حزم PHP
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
@@ -29,9 +32,6 @@ RUN cp .env.example .env && php artisan key:generate
 # تعيين صلاحيات على مجلدات التخزين والـ cache
 RUN chmod -R 775 storage bootstrap/cache storage/logs && \
     chown -R www-data:www-data storage bootstrap/cache storage/logs
-
-# تثبيت حزم npm وبناء أصول Vite
-RUN npm install && npm run build
 
 # كشف المنفذ
 EXPOSE 10000
