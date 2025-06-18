@@ -1,40 +1,45 @@
+# Use official PHP with extensions
 FROM php:8.2-fpm
 
-# تثبيت تبعيات النظام
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     git curl unzip zip \
     libzip-dev libpng-dev libonig-dev \
     libxml2-dev libpq-dev \
     && docker-php-ext-install pdo pdo_mysql zip
 
-# تثبيت Node.js (لـ Vite)
+# Install Node.js (for Vite build)
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs
 
-# نسخ Composer من الصورة الرسمية
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# تعيين مجلد العمل
+# Set working directory
 WORKDIR /var/www/html
 
-# نسخ ملفات المشروع
+# Copy project files
 COPY . .
 
-# تثبيت حزم npm وبناء أصول Vite (يجب قبل composer)
-RUN npm install && npm run build
-
-# تثبيت حزم PHP
+# Install PHP dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# نسخ ملف .env وإنشاء مفتاح التطبيق
+# Copy .env and generate key
 RUN cp .env.example .env && php artisan key:generate
 
-# تعيين صلاحيات على مجلدات التخزين والـ cache
+# Set storage/cache permissions
 RUN chmod -R 775 storage bootstrap/cache storage/logs && \
     chown -R www-data:www-data storage bootstrap/cache storage/logs
 
-# كشف المنفذ
+# Install npm packages and build Vite assets
+RUN npm install && npm run build
+
+# ✅ Fix permissions for Vite build output
+RUN chmod -R 755 public/build && \
+    chown -R www-data:www-data public/build
+
+# Expose port
 EXPOSE 10000
 
-# تشغيل سيرفر Laravel (للتطوير)
+# Start Laravel dev server
 CMD php artisan serve --host=0.0.0.0 --port=10000
