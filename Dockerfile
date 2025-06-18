@@ -39,6 +39,11 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 
 # فتح البورت
 EXPOSE 10000
+# تثبيت Node.js وبناء ملفات Vite
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+RUN apt-get install -y nodejs
+RUN npm install
+RUN npm run build
 
 # تشغيل السيرفر
 CMD php artisan serve --host=0.0.0.0 --port=10000
