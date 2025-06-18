@@ -7,9 +7,12 @@ COPY . .
 # Install PHP dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Setup Laravel env
+# Copy .env file
 RUN cp .env.example .env
-RUN php artisan key:generate
 
-# Set correct permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# Give Laravel proper permissions
+RUN chmod -R 775 storage bootstrap/cache && \
+    chown -R www-data:www-data storage bootstrap/cache
+
+# Generate Laravel app key
+RUN php artisan key:generate
