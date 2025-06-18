@@ -40,6 +40,9 @@ RUN chmod -R 755 public/build && \
 
 # Expose port
 EXPOSE 10000
+RUN apt-get update && apt-get install -y openssh-server
 
 # Start Laravel dev server
-CMD php artisan serve --host=0.0.0.0 --port=10000
+CMD ["/bin/bash"]
+
+
