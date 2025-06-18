@@ -28,7 +28,8 @@ COPY . .
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # نسخ مجلد البناء من المرحلة الأولى
-COPY --from=node-builder /var/www/html/public/build /var/www/html/public/build
+COPY --from=node-builder /var/www/html/public /var/www/html/public
+
 
 # إعداد بيئة Laravel
 RUN cp .env.example .env && php artisan key:generate
@@ -37,7 +38,8 @@ RUN cp .env.example .env && php artisan key:generate
 RUN chown -R www-data:www-data storage bootstrap/cache
 
 # كشف منفذ php-fpm الافتراضي
-EXPOSE 10000
+EXPOSE 8080
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+
 
