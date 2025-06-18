@@ -11,6 +11,8 @@ export default defineConfig({
     build: {
         outDir: 'public/build',
         manifest: true,
+        // احذف rollupOptions أو عدله ليشمل css مع js
+        // أو اجعله هكذا:
         rollupOptions: {
             input: ['resources/css/app.css', 'resources/js/app.js'],
         },
