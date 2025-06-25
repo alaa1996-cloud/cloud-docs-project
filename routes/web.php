@@ -44,6 +44,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/keywords/{keyword}', [KeywordController::class, 'update'])->name('keywords.update');
         Route::delete('/keywords/{keyword}', [KeywordController::class, 'destroy'])->name('keywords.destroy');
     });
+    Route::get('/clear-cache', function() {
+        \Artisan::call('config:clear');
+        \Artisan::call('cache:clear');
+        \Artisan::call('config:cache');
+        return 'Cache cleared!';
+    });
 
 });
 
